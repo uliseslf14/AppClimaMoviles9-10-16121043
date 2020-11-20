@@ -17,18 +17,18 @@ struct ClimaManager {
     func realizarSolicitud(urlString : String) {
         if let url = URL(string: urlString){
             let session = URLSession(configuration: .default)
-            let tarea = session.dataTask(with: url, completionHandler: handle(data:respuesta:error:))
+            //let tarea = session.dataTask(with: url, completionHandler: handle(data:respuesta:error:))
+            let tarea = session.dataTask(with: url){ (data, respuesta, error) in
+                if error != nil {
+                    print(error!)
+                    return
+                }
+                if let datosSeguros = data{
+                    let dataString = String(data: datosSeguros, encoding: .utf8)
+                    print(dataString!)
+                }
+            }
             tarea.resume()
-        }
-    }
-    func handle(data : Data?, respuesta : URLResponse?, error : Error?) {
-        if error != nil {
-            print(error!)
-            return
-        }
-        if let datosSeguros = data{
-            let dataString = String(data: datosSeguros, encoding: .utf8)
-            print(dataString!)
         }
     }
 }
