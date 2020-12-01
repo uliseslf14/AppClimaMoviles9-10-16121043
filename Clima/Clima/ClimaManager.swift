@@ -9,6 +9,8 @@
 import Foundation
 protocol ClimaManagerDelegate {
     func actualizarClima(clima: ClimaModelo)
+    
+    func findError(wichError: Error)
 }
 struct ClimaManager {
     var delegado: ClimaManagerDelegate?
@@ -18,13 +20,18 @@ struct ClimaManager {
         
         realizarSolicitud(urlString: urlString)
     }
+    func fetchClima(lat: Double, long: Double){
+        let urlString = "\(ClimaURL)&lat=\(lat)&lon=\(long)"
+        realizarSolicitud(urlString: urlString)
+    }
     func realizarSolicitud(urlString : String) {
         if let url = URL(string: urlString){
             let session = URLSession(configuration: .default)
             //let tarea = session.dataTask(with: url, completionHandler: handle(data:respuesta:error:))
             let tarea = session.dataTask(with: url){ (data, respuesta, error) in
                 if error != nil {
-                    print(error!)
+                    self.delegado?.findError(wichError: error!)
+                    //print(error!)
                     return
                 }
                 if let datosSeguros = data{
@@ -45,12 +52,18 @@ struct ClimaManager {
             let nombre = dataDecodificada.name
             let descripcion = dataDecodificada.weather[0].description
             let temperatura = dataDecodificada.main.temp
+            let humedad = dataDecodificada.main.humidity
+            let min = dataDecodificada.main.temp_min
+            let max = dataDecodificada.main.temp_max
+            let velocidad = dataDecodificada.wind.speed
             
-            let ObjClima = ClimaModelo(condicionID: id, nombreCiudad: nombre, descripcionClima: descripcion, temperaturaCelcius: temperatura)
+            
+            let ObjClima = ClimaModelo(condicionID: id, nombreCiudad: nombre, descripcionClima: descripcion, temperaturaCelcius: temperatura, temperaturaMinima: min, temperaturaMaxima: max, humedad:humedad, velocidad:velocidad)
             return ObjClima
             
         }catch{
-            print(error)
+            delegado?.findError(wichError: error)
+            //print(error)
             return nil
         }
     }
